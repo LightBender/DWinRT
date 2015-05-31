@@ -1,0 +1,15 @@
+﻿{
+	"name": "Windows Runtime API for D",
+	"description": "A D langauge API projection for the Windows Runtime.",
+	"license": "BSL-1.0",
+	"copyright": "Copyright (c) 2015 Adam Wilson",
+	"authors": [
+		"Adam Wilson"
+	],
+	"configurations": [
+	 	{
+			"name": "library",
+	 		"targetType": "staticLibrary",
+		}
+	]
+}
