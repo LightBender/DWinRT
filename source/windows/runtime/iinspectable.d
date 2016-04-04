@@ -1,8 +1,9 @@
 ﻿module windows.iinspectable;
 
 import windows.com;
+import windows.runtime.hstring;
 
-public enum TrustLevel {
+public enum TrustLevel : int {
 	BaseTrust		= 0,
 	PartialTrust	= 1,
 	FullTrust		= 2,

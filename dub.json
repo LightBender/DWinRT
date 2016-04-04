@@ -1,15 +1,12 @@
 ﻿{
-	"name": "Windows Runtime API for D",
+	"name": "dwinrt",
 	"description": "A D langauge API projection for the Windows Runtime.",
 	"license": "BSL-1.0",
-	"copyright": "Copyright (c) 2015 Adam Wilson",
-	"authors": [
-		"Adam Wilson"
-	],
-	"configurations": [
-	 	{
-			"name": "library",
-	 		"targetType": "staticLibrary",
-		}
-	]
+	"copyright": "Copyright (c) 2015-2016 Adam Wilson",
+	"authors": [ "Adam Wilson" ],
+	"targetName": "libdwinrt",
+	"targetPath": "lib",
+	"targetType": "staticLibrary",
+	"versions" : [ "Windows100" ],
+	"dependencies": { }
 }

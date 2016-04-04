@@ -1,7 +1,7 @@
 ﻿module windows.com;
 
-public import std.c.windows.windows;
-public import std.c.windows.com;
+public import core.sys.windows.windows;
+public import core.sys.windows.com;
 
 import core.atomic;
 
@@ -15,10 +15,3 @@ public template uuid(T, const char[] g) {
 		"}";
 }
 
-struct HSTRING__ {
-align(1):
-	int unused;
-}
-alias HSTRING__* HSTRING;
-
-alias HANDLE HSTRING_BUFFER;

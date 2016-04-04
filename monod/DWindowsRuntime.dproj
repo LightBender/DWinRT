@@ -46,5 +46,11 @@
     <Compile Include="..\source\windows\iinspectable.d" />
     <Compile Include="..\source\windows\com.d" />
     <Compile Include="..\source\windows\config.d" />
+    <Compile Include="..\source\windows\foundation\package.d" />
+    <Compile Include="..\source\windows\foundation\types.d" />
+    <Compile Include="..\source\windows\hstring.d" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="..\source\windows\foundation\" />
   </ItemGroup>
 </Project>
