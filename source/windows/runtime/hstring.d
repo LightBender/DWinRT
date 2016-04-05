@@ -3,6 +3,8 @@
 public import windows.com;
 import windows.config;
 
+import std.utf;
+
 public struct HSTRING__ {
 align(1):
 	int unused;
@@ -21,30 +23,234 @@ public struct HSTRING_HEADER {
 	}
 }
 
-public extern(Windows) HRESULT WindowsCompareStringOrdinal(HSTRING string1, HSTRING string2, int* result);
-public extern(Windows) HRESULT WindowsConcatString(HSTRING string1, HSTRING string2, HSTRING* newString);
-public extern(Windows) HRESULT WindowsCreateString(const(wchar*) sourceString, uint length, HSTRING* string);
-public extern(Windows) HRESULT WindowsCreateStringReference(const(wchar*) sourceString, uint length, HSTRING_HEADER* hstringHeader, HSTRING* string);
-public extern(Windows) HRESULT WindowsDeleteString(HSTRING string);
-public extern(Windows) HRESULT WindowsDeleteStringBuffer(HSTRING_BUFFER bufferHandle);
-public extern(Windows) HRESULT WindowsDuplicateString(HSTRING string, HSTRING* newString);
-public extern(Windows) int WindowsGetStringLen(HSTRING string);
-public extern(Windows) const(wchar*) WindowsGetStringRawBuffer(HSTRING string, uint* length);
-public extern(Windows) BOOL WindowsIsStringEmpty(HSTRING string);
-public extern(Windows) HRESULT WindowsPreallocateStringBuffer(uint length, wchar** mutableBuffer, HSTRING_BUFFER bufferHandle);
-public extern(Windows) HRESULT WindowsPromoteStringBuffer(HSTRING_BUFFER bufferHandle, HSTRING* string);
-public extern(Windows) HRESULT WindowsReplaceString(HSTRING string, HSTRING stringReplace, HSTRING stringReplaceWith, HSTRING* newString);
-public extern(Windows) HRESULT WindowsStringHasEmbeddedNull(HSTRING string, BOOL* hasEmbedNull);
-public extern(Windows) HRESULT WindowsSubstring(HSTRING string, uint startIndex, HSTRING* newString);
-public extern(Windows) HRESULT WindowsSubstringWithSpecifiedLength(HSTRING string, uint startIndex, uint length, HSTRING* newString);
-public extern(Windows) HRESULT WindowsTrimStringEnd(HSTRING string, HSTRING trimString, HSTRING* newString);
-public extern(Windows) HRESULT WindowsTrimStringStart(HSTRING string, HSTRING trimString, HSTRING* newString);
+public extern (Windows) nothrow @nogc:
 
-public extern(Windows) void HSTRING_UserFree(ulong *flags, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserFree64(ulong *flags, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserMarshal(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserMarshal64(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserUserSize(ulong *flags, ulong StartingSize, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserUserSize64(ulong *flags, ulong StartingSize, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserUnmarshal(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
-public extern(Windows) void HSTRING_UserUnmarshal64(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
+HRESULT WindowsCompareStringOrdinal(HSTRING string1, HSTRING string2, int* result);
+HRESULT WindowsConcatString(HSTRING string1, HSTRING string2, HSTRING* newString);
+HRESULT WindowsCreateString(const(wchar*) sourceString, uint length, HSTRING* string);
+HRESULT WindowsCreateStringReference(const(wchar*) sourceString, uint length, HSTRING_HEADER* hstringHeader, HSTRING* string);
+HRESULT WindowsDeleteString(HSTRING string);
+HRESULT WindowsDeleteStringBuffer(HSTRING_BUFFER bufferHandle);
+HRESULT WindowsDuplicateString(HSTRING string, HSTRING* newString);
+int WindowsGetStringLen(HSTRING string);
+const(wchar*) WindowsGetStringRawBuffer(HSTRING string, uint* length);
+BOOL WindowsIsStringEmpty(HSTRING string);
+HRESULT WindowsPreallocateStringBuffer(uint length, wchar** mutableBuffer, HSTRING_BUFFER bufferHandle);
+HRESULT WindowsPromoteStringBuffer(HSTRING_BUFFER bufferHandle, HSTRING* string);
+HRESULT WindowsReplaceString(HSTRING string, HSTRING stringReplace, HSTRING stringReplaceWith, HSTRING* newString);
+HRESULT WindowsStringHasEmbeddedNull(HSTRING string, BOOL* hasEmbedNull);
+HRESULT WindowsSubstring(HSTRING string, uint startIndex, HSTRING* newString);
+HRESULT WindowsSubstringWithSpecifiedLength(HSTRING string, uint startIndex, uint length, HSTRING* newString);
+HRESULT WindowsTrimStringEnd(HSTRING string, HSTRING trimString, HSTRING* newString);
+HRESULT WindowsTrimStringStart(HSTRING string, HSTRING trimString, HSTRING* newString);
+
+void HSTRING_UserFree(ulong *flags, HSTRING* ppidl);
+void HSTRING_UserFree64(ulong *flags, HSTRING* ppidl);
+void HSTRING_UserMarshal(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
+void HSTRING_UserMarshal64(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
+void HSTRING_UserUserSize(ulong *flags, ulong StartingSize, HSTRING* ppidl);
+void HSTRING_UserUserSize64(ulong *flags, ulong StartingSize, HSTRING* ppidl);
+void HSTRING_UserUnmarshal(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
+void HSTRING_UserUnmarshal64(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
+
+public struct WinString
+{
+	private shared static WinString spaceStr;
+	private shared static WinString tabStr;
+	private shared static WinString vtabStr;
+	private shared static WinString backStr;
+
+	private shared static this()
+	{
+		spaceStr = cast(shared)WinString(" ");
+		tabStr = cast(shared)WinString("\t");
+		vtabStr = cast(shared)WinString("\v");
+		backStr = cast(shared)WinString("\b");
+	}
+
+	private HSTRING _str;
+	private int _len;
+	private bool _empty;
+
+	public @property int length() { return _len; }
+	public @property bool empty() { return _empty; }
+
+	private this(HSTRING str)
+	{
+		_str = str;
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	~this()
+	{
+		WindowsDeleteString(_str);
+	}
+
+	public this(string str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public this(wstring str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public this(dstring str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public this(in char[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public this(in wchar[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public this(in dchar[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	public WinString trim()
+	{
+		HSTRING temp;
+		WindowsTrimStringEnd(_str, (cast(WinString)spaceStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)tabStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)vtabStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)backStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)spaceStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)tabStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)vtabStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)backStr)._str, &temp);
+		return WinString(temp);
+	}
+
+	public WinString trimStart()
+	{
+		HSTRING temp;
+		WindowsTrimStringStart(_str, (cast(WinString)spaceStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)tabStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)vtabStr)._str, &temp);
+		WindowsTrimStringStart(temp, (cast(WinString)backStr)._str, &temp);
+		return WinString(temp);
+	}
+
+	public WinString trimEnd()
+	{
+		HSTRING temp;
+		WindowsTrimStringEnd(_str, (cast(WinString)spaceStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)tabStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)vtabStr)._str, &temp);
+		WindowsTrimStringEnd(temp, (cast(WinString)backStr)._str, &temp);
+		return WinString(temp);
+	}
+
+	public WinString replace(dstring oldValue, dstring newValue)
+	{
+		auto ov = WinString(oldValue);
+		auto nv = WinString(newValue);
+
+		HSTRING temp;
+		WindowsReplaceString(_str, ov._str, nv._str, &temp);
+		return WinString(temp);
+	}
+
+	public WinString substring(uint startIndex)
+	{
+		HSTRING temp;
+		WindowsSubstring(_str, startIndex, &temp);
+		return WinString(temp);
+	}
+
+	public WinString substring(uint startIndex, uint length)
+	{
+		HSTRING temp;
+		WindowsSubstringWithSpecifiedLength(_str, startIndex, length, &temp);
+		return WinString(temp);
+	}
+
+	bool opEquals()(auto ref const S s) const {
+		int ret = 0;
+		WindowsCompareStringOrdinal(_str, s._str, &ret);
+		return ret == 0;
+	}
+
+	WinString opBinary(string op)(WinString rhs)
+	{
+		static if (op == "~")
+		{
+			HSTRING temp;
+			WindowsConcatString(_str, rhs._str, &temp);
+			return temp;
+		}
+		else static assert(0, "Operator "~op~" not supported");
+	}
+
+	void opAssign(WinString rhs)
+	{
+		_str = rhs._str;
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(string str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(wstring str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(dstring str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(in char[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(in wchar[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+	void opAssign(in dchar[] str)
+	{
+		WindowsCreateString(toUTF16z(str), toUTF16(str).length, &_str);
+		_len = WindowsGetStringLen(_str);
+		_empty = WindowsIsStringEmpty(_str) == 0;
+	}
+
+}

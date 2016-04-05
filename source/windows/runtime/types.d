@@ -1,5 +1,7 @@
 module windows.runtime.types;
 
+import windows.config;
+
 //
 // Enumerations
 //
