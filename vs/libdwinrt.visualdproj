@@ -211,6 +211,7 @@
   <Folder name="runtime">
    <File path="..\source\windows\runtime\hstring.d" />
    <File path="..\source\windows\runtime\iinspectable.d" />
+   <File path="..\source\windows\runtime\metadata.d" />
    <File path="..\source\windows\runtime\package.d" />
    <File path="..\source\windows\runtime\types.d" />
   </Folder>

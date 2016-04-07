@@ -19,12 +19,12 @@ public enum AsyncStatus : int {
 	Error		= 3
 }
 
-public enum BSOS_OPTIONS {
+public enum BSOS_OPTIONS : int {
 	BSOS_DEFAULT                  = 0,
 	BSOS_PREFERDESTINATIONSTREAM  = 1
 }
 
-public enum ErrorOptions {
+public enum ErrorOptions : int {
 	None                  = RO_ERROR_REPORTING_NONE,
 	SuppressExceptions    = RO_ERROR_REPORTING_SUPPRESSEXCEPTIONS,
 	ForceExceptions       = RO_ERROR_REPORTING_FORCEEXCEPTIONS,
@@ -32,7 +32,7 @@ public enum ErrorOptions {
 	SuppressSetErrorInfo  = RO_ERROR_REPORTING_SUPPRESSSETERRORINFO
 }
 
-public enum InputStreamOptions {
+public enum InputStreamOptions : int {
 	None       = 0,
 	Partial    = 1,
 	ReadAhead  = 2
@@ -82,55 +82,55 @@ public enum PropertyType : int {
 	OtherTypeArray		= 1044,
 }
 
-public enum TrustLevel {
+public enum TrustLevel : int {
 	BaseTrust     = 0,
 	PartialTrust  = 1,
 	FullTrust     = 2
 }
 
-public enum RO_INIT_TYPE {
+public enum RO_INIT_TYPE : int {
 	RO_INIT_MULTITHREADED  = 1
 }
 
 static if(Runtime81)
 {
 
-	public enum _ActivationType {
+	public enum _ActivationType : int {
 		InProcess		= 0,
 		OutOfProcess	= 1
 	}
 	public alias _ActivationType ActivationType;
 
-	public enum _AgileReferenceOptions {
+	public enum _AgileReferenceOptions : int {
 		AGILEREFERENCE_DEFAULT			= 0,
 		AGILEREFERENCE_DELAYEDMARSHAL	= 1
 	}
 	public alias _AgileReferenceOptions AgileReferenceOptions;
 
-	public enum IdentityType {
+	public enum IdentityType : int {
 		ActivateAsActivator  = 0,
 		RunAs                = 1,
 		ActivateAsPackage    = 2
 	}
 
-	public enum InstancingType {
+	public enum InstancingType : int {
 		SingleInstance     = 0,
 		MultipleInstances  = 1
 	}
 
-	public enum RegisteredTrustLevel {
+	public enum RegisteredTrustLevel : int {
 		BaseTrust     = 0,
 		PartialTrust  = 1,
 		FullTrust     = 2
 	}
 
-	public enum RegistrationScope {
+	public enum RegistrationScope : int {
 		PerMachine  = 0,
 		PerUser     = 1,
 		InboxApp    = 2
 	}
 
-	public enum ThreadingType {
+	public enum ThreadingType : int {
 		BOTH  = 0,
 		STA   = 1,
 		MTA   = 2
