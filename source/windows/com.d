@@ -4,6 +4,7 @@ public import core.sys.windows.windows;
 public import core.sys.windows.com;
 public import core.sys.windows.wtypes;
 public import core.sys.windows.objidl;
+public import core.sys.windows.oaidl;
 
 import core.atomic;
 
