@@ -215,6 +215,7 @@
    <File path="..\source\windows\runtime\package.d" />
    <File path="..\source\windows\runtime\types.d" />
   </Folder>
+  <File path="..\source\app.d" />
   <File path="..\source\windows\com.d" />
   <File path="..\source\windows\config.d" />
  </Folder>

@@ -14,7 +14,7 @@ public extern (Windows) nothrow @nogc
 	HRESULT RoActivateInstance(HSTRING activatableClassId, IInspectable *instance);
 	void RoRevokeActivationFactories(RO_REGISTRATION_COOKIE cookie);
 
-	HRESULT RoGetBufferMarshaler(IMarshal *bufferMarshaler);
+	HRESULT RoGetBufferMarshaler(IMarshal bufferMarshaler);
 	HRESULT RoGetApartmentIdentifier(ulong *apartmentIdentifier);
 	HRESULT RoGetServerActivatableClasses(HSTRING serverName, HSTRING **activatableClassIds, DWORD *count);
 

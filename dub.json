@@ -4,9 +4,38 @@
 	"license": "BSL-1.0",
 	"copyright": "Copyright (c) 2015-2016 Adam Wilson",
 	"authors": [ "Adam Wilson" ],
-	"targetName": "libdwinrt",
-	"targetPath": "lib",
-	"targetType": "staticLibrary",
-	"versions" : [ "Windows100" ],
-	"dependencies": { }
+	"configurations": [
+		{
+			"name": "libdwinrt-x64",
+			"targetType": "staticLibrary",
+			"targetPath": "bin",
+			"targetName": "libdwinrt64",
+			"platforms": ["windows"],
+			"versions": ["Windows100"],
+			"excludedSourceFiles" : [ "source/app.d" ],
+			"libs": ["runtimeobject"],
+			"dflags": [ "-m64" ]
+		},
+		{
+			"name": "libdwinrt-x86",
+			"targetType": "staticLibrary",
+			"targetPath": "bin",
+			"targetName": "libdwinrt32",
+			"platforms": ["windows"],
+			"versions": ["Windows100"],
+			"excludedSourceFiles" : [ "source/app.d" ],
+			"libs": ["runtimeobject"],
+			"dflags": [ "-m32mscoff" ]
+		},
+		{
+			"name": "libdwinrt-test",
+			"targetType": "executable",
+			"targetPath": "bin",
+			"targetName": "libdwinrt-test",
+			"platforms": ["windows"],
+			"versions": ["Windows100"],
+			"libs": ["runtimeobject"],
+			"dflags": [ "-m32mscoff" ]
+		}
+	]
 }

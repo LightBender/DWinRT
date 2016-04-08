@@ -274,4 +274,9 @@ public struct WinString
 		auto str = WindowsGetStringRawBuffer(_str, &strlen);
 		return toUTF32(str[0..strlen]);
 	}
+
+	public HSTRING toHString()
+	{
+		return _str;
+	}
 }
