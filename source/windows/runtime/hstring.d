@@ -1,17 +1,17 @@
 ﻿module windows.runtime.hstring;
+version (Windows):
 
 public import windows.com;
 import windows.config;
 
 import std.utf;
 
+public alias HANDLE HSTRING_BUFFER;
 public struct HSTRING__ {
 align(1):
 	int unused;
 }
 public alias HSTRING__* HSTRING;
-
-public alias HANDLE HSTRING_BUFFER;
 
 public struct HSTRING_HEADER {
 	union {
@@ -22,6 +22,26 @@ public struct HSTRING_HEADER {
 			char[20] Reserved2;
 	}
 }
+
+
+immutable(wchar)* toStringz(const(wchar)[] s) @trusted pure nothrow
+{
+	import std.exception : assumeUnique;
+	auto copy = new wchar[s.length + 1];
+	copy[0..s.length] = s[];
+	copy[s.length] = 0;
+
+	return assumeUnique(copy).ptr;
+}
+
+immutable(wchar)* toStringz(in wstring s) @trusted pure nothrow
+{
+	immutable p = s.ptr + s.length;
+	if ((cast(size_t) p & 3) && *p == 0)
+		return s.ptr;
+	return toStringz(cast(const wchar[]) s);
+}
+
 
 public extern (Windows) nothrow @nogc
 {
@@ -54,7 +74,7 @@ public extern (Windows) nothrow @nogc
 	void HSTRING_UserUnmarshal64(ulong *flags, ubyte *pBuffer, HSTRING* ppidl);
 }
 
-public struct WinString
+public class WinString
 {
 	private shared static WinString spaceStr;
 	private shared static WinString tabStr;
@@ -63,10 +83,10 @@ public struct WinString
 
 	private shared static this()
 	{
-		spaceStr = cast(shared)WinString(" ");
-		tabStr = cast(shared)WinString("\t");
-		vtabStr = cast(shared)WinString("\v");
-		backStr = cast(shared)WinString("\b");
+		spaceStr = cast(shared) new WinString(" ");
+		tabStr = cast(shared) new WinString("\t");
+		vtabStr = cast(shared) new WinString("\v");
+		backStr = cast(shared) new WinString("\b");
 	}
 
 	private HSTRING _str;
@@ -76,16 +96,16 @@ public struct WinString
 	public @property int length() { return _len; }
 	public @property bool empty() { return _empty; }
 
-	private this(HSTRING str)
+	~this()
+	{
+		WindowsDeleteString(_str);
+	}
+
+	public this(HSTRING str)
 	{
 		_str = str;
 		_len = WindowsGetStringLen(_str);
 		_empty = WindowsIsStringEmpty(_str) == 0;
-	}
-
-	~this()
-	{
-		WindowsDeleteString(_str);
 	}
 
 	public this(string str)
@@ -141,7 +161,7 @@ public struct WinString
 		WindowsTrimStringStart(temp, (cast(WinString)tabStr)._str, &temp);
 		WindowsTrimStringStart(temp, (cast(WinString)vtabStr)._str, &temp);
 		WindowsTrimStringStart(temp, (cast(WinString)backStr)._str, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public WinString trimStart()
@@ -151,7 +171,7 @@ public struct WinString
 		WindowsTrimStringStart(temp, (cast(WinString)tabStr)._str, &temp);
 		WindowsTrimStringStart(temp, (cast(WinString)vtabStr)._str, &temp);
 		WindowsTrimStringStart(temp, (cast(WinString)backStr)._str, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public WinString trimEnd()
@@ -161,31 +181,31 @@ public struct WinString
 		WindowsTrimStringEnd(temp, (cast(WinString)tabStr)._str, &temp);
 		WindowsTrimStringEnd(temp, (cast(WinString)vtabStr)._str, &temp);
 		WindowsTrimStringEnd(temp, (cast(WinString)backStr)._str, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public WinString replace(dstring oldValue, dstring newValue)
 	{
-		auto ov = WinString(oldValue);
-		auto nv = WinString(newValue);
+		auto ov = new WinString(oldValue);
+		auto nv = new WinString(newValue);
 
 		HSTRING temp;
 		WindowsReplaceString(_str, ov._str, nv._str, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public WinString substring(uint startIndex)
 	{
 		HSTRING temp;
 		WindowsSubstring(_str, startIndex, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public WinString substring(uint startIndex, uint length)
 	{
 		HSTRING temp;
 		WindowsSubstringWithSpecifiedLength(_str, startIndex, length, &temp);
-		return WinString(temp);
+		return new WinString(temp);
 	}
 
 	public bool opEquals()(auto ref const S s) const {
@@ -200,16 +220,9 @@ public struct WinString
 		{
 			HSTRING temp;
 			WindowsConcatString(_str, rhs._str, &temp);
-			return temp;
+			return new WinString(temp);
 		}
 		else static assert(0, "Operator "~op~" not supported");
-	}
-
-	public void opAssign(WinString rhs)
-	{
-		_str = rhs._str;
-		_len = WindowsGetStringLen(_str);
-		_empty = WindowsIsStringEmpty(_str) == 0;
 	}
 
 	public void opAssign(string str)
@@ -254,7 +267,7 @@ public struct WinString
 		_empty = WindowsIsStringEmpty(_str) == 0;
 	}
 
-	public string toString()
+	public override string toString()
 	{
 		uint strlen = 0;
 		auto str = WindowsGetStringRawBuffer(_str, &strlen);

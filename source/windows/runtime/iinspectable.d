@@ -1,4 +1,5 @@
 ﻿module windows.runtime.iinspectable;
+version (Windows):
 
 import windows.config;
 import windows.com;

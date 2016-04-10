@@ -13,7 +13,6 @@
 			"platforms": ["windows"],
 			"versions": ["Windows100"],
 			"excludedSourceFiles" : [ "source/app.d" ],
-			"libs": ["runtimeobject"],
 			"dflags": [ "-m64" ]
 		},
 		{
@@ -24,7 +23,6 @@
 			"platforms": ["windows"],
 			"versions": ["Windows100"],
 			"excludedSourceFiles" : [ "source/app.d" ],
-			"libs": ["runtimeobject"],
 			"dflags": [ "-m32mscoff" ]
 		},
 		{
@@ -34,7 +32,7 @@
 			"targetName": "libdwinrt-test",
 			"platforms": ["windows"],
 			"versions": ["Windows100"],
-			"libs": ["runtimeobject"],
+			"libs": ["runtimeobject", "rometadata"],
 			"dflags": [ "-m32mscoff" ]
 		}
 	]
